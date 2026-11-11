@@ -12,6 +12,7 @@ defmodule TasktreeWeb.Router do
   scope "/api", TasktreeWeb do
     pipe_through [:api, :authenticated]
 
+    get "/me", MeController, :show
     get "/schema", SchemaController, :show
     get "/tree", TreeController, :show
     get "/events", EventController, :index

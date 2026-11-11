@@ -46,6 +46,8 @@ defmodule TasktreeWeb.AuthTest do
 
     test "valid token resolves the actor" do
       assert %{"data" => _} = json!(api(:get, "/api/nodes"), 200)
+      assert %{"actor" => "human:test"} = json!(api(:get, "/api/me"), 200)
+      assert %{"actor" => "agent:test"} = json!(api(:get, "/api/me", nil, token: agent()), 200)
     end
   end
 

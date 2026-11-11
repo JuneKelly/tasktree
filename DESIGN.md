@@ -189,6 +189,8 @@ Pages:
 
 Data layer: a typed API client (hand-written, one file), TanStack Query for caching, polling every 5s on Outline/Agenda (realtime push is a non-goal; Phoenix Channels is the natural follow-up). On `version_conflict`, refetch and show a "node changed, review and retry" notice. Never auto-overwrite.
 
+Add `GET /api/me` to the API list: returns `{actor}` for the bearer token (the login screen uses it to validate a pasted token; the UI uses it to decide whether to offer "steal claim", which is for `human:*` actors only).
+
 Add `GET /api/schema` to the API list: returns `{states, transitions, fields, actionable}` so the UI is driven by the workflow config rather than hardcoding it.
 
 ## 8. Build order
