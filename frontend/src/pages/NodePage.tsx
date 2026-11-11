@@ -45,7 +45,7 @@ function Editor({ node, schema }: { node: NodeDetail; schema: Schema }) {
           <label htmlFor="body">Body (markdown)</label>
           <textarea id="body" rows={8} value={body} onChange={(e) => setBody(e.target.value)} />
         </div>
-        <div aria-label="Preview" className="preview">
+        <div aria-label="Preview" className="preview md">
           <Markdown>{body}</Markdown>
         </div>
       </div>

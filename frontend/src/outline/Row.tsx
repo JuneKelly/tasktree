@@ -164,7 +164,7 @@ function Row({ node }: { node: TreeNode }) {
           <RawBodyEditor {...bodyProps} />
         ) : a.body.trim() ? (
           <div
-            className="body-view"
+            className="body-view md"
             aria-label={`Notes for ${node.title}`}
             onClick={(e) => {
               if (!(e.target as HTMLElement).closest('a')) openBody()
@@ -182,7 +182,7 @@ function Row({ node }: { node: TreeNode }) {
       </div>
 
       {(hasKids || draftChild) && !collapsed && (
-        <ul>
+        <ul className="children">
           <NodeList nodes={node.children} parentId={node.id} draft={o.draft} />
         </ul>
       )}

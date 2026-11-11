@@ -34,7 +34,7 @@ export function RichBodyEditor({ label, initial, onChange, onFocus, onBlur }: Pr
     content: initial,
     contentType: 'markdown',
     autofocus: 'end',
-    editorProps: { attributes: { 'aria-label': label, class: 'body-rich' } },
+    editorProps: { attributes: { 'aria-label': label, class: 'body-rich md' } },
     onCreate: ({ editor }) => {
       created.current = true
       loaded.current ??= editor.getMarkdown()

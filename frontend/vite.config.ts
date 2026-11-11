@@ -16,6 +16,8 @@ export default defineConfig(({ command, mode }) => {
     test: {
       environment: 'jsdom',
       setupFiles: ['./src/test/setup.ts'],
+      // Load the real stylesheet (only this one) so style tests can inspect its rules.
+      css: { include: [/src\/index\.css/] },
     },
   }
 })
