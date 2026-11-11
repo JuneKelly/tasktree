@@ -403,6 +403,18 @@ legend { color: var(--muted); font-size: 0.85rem; padding: 0 0.25rem; }
 .md th, .md td { border: 1px solid var(--border); padding: 0.2em 0.5em; text-align: left; }
 .md th { background: var(--hover); font-weight: 600; }
 
+/* Tables while editing (TipTap wraps them; cells can be selected). */
+.body-rich .tableWrapper { overflow-x: auto; }
+.body-rich td, .body-rich th { min-width: 4em; position: relative; }
+.body-rich .selectedCell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  opacity: 0.15;
+  pointer-events: none;
+}
+
 /* Login */
 
 .login { max-width: 24rem; margin-top: 15vh; }

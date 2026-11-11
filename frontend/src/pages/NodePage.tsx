@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import Markdown from 'react-markdown'
 import { useParams } from 'react-router'
 import { api, ApiError } from '../api/client'
 import { useActor, useApiMutation, useNode, useNodeEvents, useSchema, useTree } from '../api/hooks'
 import type { Edge, FieldValue, NodeDetail, NodeEvent, Schema } from '../api/types'
 import { ClaimIndicator, NodeLink, NodePicker, StateBadge } from '../components/Bits'
 import { FieldInput } from '../components/FieldInput'
+import { MarkdownView } from '../editor/MarkdownView'
 import { StateMenu } from '../components/StateMenu'
 import { flattenTree, type FlatNode } from '../treeUtils'
 
@@ -46,7 +46,7 @@ function Editor({ node, schema }: { node: NodeDetail; schema: Schema }) {
           <textarea id="body" rows={8} value={body} onChange={(e) => setBody(e.target.value)} />
         </div>
         <div aria-label="Preview" className="preview md">
-          <Markdown>{body}</Markdown>
+          <MarkdownView>{body}</MarkdownView>
         </div>
       </div>
       <p>

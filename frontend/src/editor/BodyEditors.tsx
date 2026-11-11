@@ -10,6 +10,9 @@ interface Props {
   onBlur: () => void
 }
 
+// The serializer pads tables with blank lines; leading/trailing ones carry no meaning.
+const trimBlankLines = (md: string) => md.replace(/^(?:[ \t]*\n)+/, '').replace(/(?:\n[ \t]*)+$/, '')
+
 const blurActive = () => (document.activeElement as HTMLElement | null)?.blur()
 
 /**
@@ -37,10 +40,10 @@ export function RichBodyEditor({ label, initial, onChange, onFocus, onBlur }: Pr
     editorProps: { attributes: { 'aria-label': label, class: 'body-rich md' } },
     onCreate: ({ editor }) => {
       created.current = true
-      loaded.current ??= editor.getMarkdown()
+      loaded.current ??= trimBlankLines(editor.getMarkdown())
     },
     onUpdate: ({ editor }) => {
-      const md = editor.getMarkdown()
+      const md = trimBlankLines(editor.getMarkdown())
       if (!created.current) {
         loaded.current = md
         return

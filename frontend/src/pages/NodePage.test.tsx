@@ -32,6 +32,12 @@ test('shows markdown preview, schema-generated fields, and the event timeline', 
   expect(await screen.findByText(/agent:a · update changed title/)).toBeInTheDocument()
 })
 
+test('the preview renders GFM tables', async () => {
+  mockApi(base('human:june', detail({ body: '| h |\n|---|\n| v |' })))
+  renderApp('/n/n1')
+  expect(within(await screen.findByLabelText('Preview')).getByRole('cell', { name: 'v' })).toBeInTheDocument()
+})
+
 test('save sends only changed attributes with If-Match; clearing a field sends null', async () => {
   const m = mockApi({
     ...base('human:june', detail({ version: 3, fields: { effort: 5 } })),

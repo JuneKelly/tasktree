@@ -246,8 +246,8 @@ describe('notes', () => {
   })
 
   test('notes the rich editor would change open as raw markdown; edits save on blur', async () => {
-    const table = '| a | b |\n|---|---|\n| 1 | 2 |'
-    const m = mockApi({ ...withTree([treeNode({ body: table })]), 'PATCH /api/nodes/n1': { body: node({ version: 2 }) } })
+    const checklist = '- [ ] buy milk'
+    const m = mockApi({ ...withTree([treeNode({ body: checklist })]), 'PATCH /api/nodes/n1': { body: node({ version: 2 }) } })
     renderApp('/')
     await userEvent.click(await screen.findByLabelText('Notes for Write docs'))
     const raw = await screen.findByRole('textbox', { name: 'Notes for Write docs' })
@@ -255,7 +255,36 @@ describe('notes', () => {
     expect(screen.getByText(/Editing as markdown/)).toBeInTheDocument()
     await userEvent.type(raw, '\nmore')
     await blurAll()
-    expect((await one(m, 'PATCH', '/api/nodes/n1')).body).toEqual({ body: `${table}\nmore` })
+    expect((await one(m, 'PATCH', '/api/nodes/n1')).body).toEqual({ body: `${checklist}\nmore` })
+  })
+
+  test('tables render in notes and edit in the rich editor; saved markdown has no stray blank lines', async () => {
+    const table = '| a | b |\n|---|---|\n| 1 | 2 |'
+    const m = mockApi({ ...withTree([treeNode({ body: table })]), 'PATCH /api/nodes/n1': { body: node({ version: 2 }) } })
+    renderApp('/')
+    const view = await screen.findByLabelText('Notes for Write docs')
+    expect(within(view).getByRole('table')).toBeInTheDocument()
+    expect(within(view).getByRole('columnheader', { name: 'a' })).toBeInTheDocument()
+
+    await userEvent.click(within(view).getByRole('cell', { name: '2' }))
+    const el = await screen.findByRole('textbox', { name: 'Notes for Write docs' })
+    expect(el).toHaveAttribute('contenteditable', 'true')
+    expect(within(el).getByRole('table')).toBeInTheDocument()
+    await waitFor(() => expect(el).toHaveFocus())
+    const editor = (el as HTMLElement & { editor: Editor }).editor
+    // Type at the end of the "2" cell.
+    let afterTwo = -1
+    editor.state.doc.descendants((n, pos) => {
+      if (n.isText && n.text === '2') afterTwo = pos + 1
+    })
+    act(() => {
+      editor.chain().focus().setTextSelection(afterTwo).insertContent('0').run()
+    })
+    await blurAll()
+    const body = ((await one(m, 'PATCH', '/api/nodes/n1')).body as { body: string }).body
+    expect(body).toMatch(/^\| a +\| b +\|\n/)
+    expect(body).toMatch(/\| 1 +\| 20 +\|$/)
+    expect(body).not.toMatch(/^\n|\n$/)
   })
 
   test('opening and closing notes without changes saves nothing', async () => {

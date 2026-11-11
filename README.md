@@ -43,7 +43,8 @@ to start if it's missing or malformed.
   - **↑ ↓:** move between titles.
   - **Ctrl/⌘+↓:** edit the note.
   - **Esc:** stop editing.
-- Notes with tables, checklists or raw HTML open as plain markdown, so editing can't change their meaning.
+- Notes render GitHub-flavoured markdown, including tables. Tables are edited in place, and Tab moves between cells.
+- Notes with checklists or raw HTML open as plain markdown, so editing can't change their meaning.
 - If someone else changed a node while you were editing, you choose **Keep mine** or **Take theirs**. Nothing is overwritten silently.
 
 **Node page** (`/n/:id`, via the ↗ link on a row):

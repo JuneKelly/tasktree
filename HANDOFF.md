@@ -41,13 +41,14 @@ Verified: `mix test` (129+ tests) in Docker; `npm test` (26), `npm run typecheck
 - Outline rows edit titles inline and notes in place (TipTap + `@tiptap/markdown`), with autosave (`frontend/src/outline/useAutosave.ts`).
   - Saves on blur and after 1s idle, chaining `If-Match` versions.
   - Polling never replaces a field being edited. A stale save gets `version_conflict`, and the row offers Keep mine or Take theirs.
-- Rich editing is used only when a body's markdown round-trips to identical HTML (`editor/markdown.ts`). Tables, task lists, raw HTML and some escapes open as raw markdown instead. The Node page still edits bodies as raw markdown.
+- Rich editing is used only when a body's markdown round-trips to identical HTML (`editor/markdown.ts`). Tables are rich-editable (TipTap `TableKit`) and render via `remark-gfm`. Task lists, raw HTML and some escapes open as raw markdown instead.
+- Saved rich-editor markdown has leading and trailing blank lines trimmed. The serializer still pads table columns and leaves extra blank lines around tables. That's cosmetic, and happens only on real edits. The Node page still edits bodies as raw markdown.
 - Keyboard: Enter (new sibling), Tab / Shift+Tab (indent / outdent via move), ↑ ↓, Ctrl/⌘+↓ (notes), Esc.
 - Tests drive TipTap through `element.editor` commands, because jsdom can't type into ProseMirror. `test/setup.ts` stubs layout APIs ProseMirror needs.
 
 ## Open items / deferred decisions
 
-- JS bundle is ~900 kB (282 kB gzip) since TipTap; Vite warns. Lazy-loading the editor would fix it.
+- JS bundle is ~990 kB (310 kB gzip) since TipTap; Vite warns. Lazy-loading the editor would fix it.
 - Rich-editor typing, IME and paste have only been exercised in jsdom via commands, not in a real browser.
 
 - **Production SPA build** (not done, not in the §8 steps or §10 acceptance criteria): Vite `build.outDir` -> `backend/priv/static`, plus a Phoenix `index.html` fallback for non-`/api` routes. The frontend container only mounts `frontend/`, so this needs a mount or a copy step. `npm run build` itself works.

@@ -1,11 +1,11 @@
 import { Fragment, useCallback, useEffect, useState } from 'react'
-import Markdown from 'react-markdown'
 import { Link } from 'react-router'
 import { api } from '../api/client'
 import type { TreeNode } from '../api/types'
 import { BlockedIcon, ClaimIndicator, StateBadge } from '../components/Bits'
 import { StateMenu } from '../components/StateMenu'
 import { RawBodyEditor, RichBodyEditor } from '../editor/BodyEditors'
+import { MarkdownView } from '../editor/MarkdownView'
 import { richEditable } from '../editor/markdown'
 import { useOutline, type Draft } from './context'
 import { DraftRow } from './DraftRow'
@@ -170,7 +170,7 @@ function Row({ node }: { node: TreeNode }) {
               if (!(e.target as HTMLElement).closest('a')) openBody()
             }}
           >
-            <Markdown>{a.body}</Markdown>
+            <MarkdownView>{a.body}</MarkdownView>
           </div>
         ) : (
           !readOnly && (
