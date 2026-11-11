@@ -9,6 +9,7 @@ defmodule Tasktree.Application do
   def start(_type, _args) do
     # Boot fails here if the workflow config is missing or malformed.
     Tasktree.Workflow.load!()
+    Tasktree.Auth.load!()
 
     children = [
       TasktreeWeb.Telemetry,

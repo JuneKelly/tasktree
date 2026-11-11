@@ -20,6 +20,11 @@ if System.get_env("PHX_SERVER") do
   config :tasktree, TasktreeWeb.Endpoint, server: true
 end
 
+# Required outside test (test.exs sets fixed tokens); parsed and validated at boot.
+if config_env() != :test do
+  config :tasktree, auth_tokens: System.fetch_env!("TASKTREE_TOKENS")
+end
+
 config :tasktree, TasktreeWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 

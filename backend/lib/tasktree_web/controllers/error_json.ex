@@ -1,21 +1,15 @@
 defmodule TasktreeWeb.ErrorJSON do
   @moduledoc """
-  This module is invoked by your endpoint in case of errors on JSON requests.
-
-  See config/config.exs.
+  The error contract (DESIGN.md §5): `{"error": {"code", "message", "details"}}`.
+  `render/2` is invoked by the endpoint for framework errors (404, 400, 500, ...).
   """
 
-  # If you want to customize a particular status code,
-  # you may add your own clauses, such as:
-  #
-  # def render("500.json", _assigns) do
-  #   %{errors: %{detail: "Internal Server Error"}}
-  # end
+  @spec body(String.t(), String.t(), map()) :: map()
+  def body(code, message, details \\ %{}),
+    do: %{error: %{code: code, message: message, details: details}}
 
-  # By default, Phoenix returns the status message from
-  # the template name. For example, "404.json" becomes
-  # "Not Found".
   def render(template, _assigns) do
-    %{errors: %{detail: Phoenix.Controller.status_message_from_template(template)}}
+    message = Phoenix.Controller.status_message_from_template(template)
+    body(message |> String.downcase() |> String.replace(" ", "_"), message)
   end
 end
