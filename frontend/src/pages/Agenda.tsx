@@ -42,10 +42,10 @@ export default function Agenda() {
   const inProgress = sch.states.filter((s) => !s.terminal && !sch.actionable.includes(s.name)).map((s) => s.name)
 
   return (
-    <>
+    <div className="agenda">
       <Section title="Claimable" queryKey="claimable" params={{ claimable: 'true' }} />
       <Section title="In progress" queryKey="in-progress" params={{ state: inProgress }} enabled={inProgress.length > 0} />
       <Section title="Blocked" queryKey="blocked" params={{ blocked: 'true' }} />
-    </>
+    </div>
   )
 }

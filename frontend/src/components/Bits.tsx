@@ -1,12 +1,25 @@
 import { Link } from 'react-router'
-import type { Node } from '../api/types'
+import { useSchema } from '../api/hooks'
+import type { Node, Schema } from '../api/types'
 import type { FlatNode } from '../treeUtils'
 
-export const StateBadge = ({ state }: { state: string }) => (
-  <span className="badge" data-state={state}>
-    {state}
-  </span>
-)
+// Colour comes from the state's kind in the schema, never from its name.
+function stateKind(schema: Schema | undefined, state: string): string | undefined {
+  if (!schema) return undefined
+  const s = schema.states.find((x) => x.name === state)
+  if (!s) return 'unknown'
+  if (s.terminal) return 'terminal'
+  return schema.actionable.includes(state) ? 'actionable' : 'active'
+}
+
+export function StateBadge({ state }: { state: string }) {
+  const schema = useSchema()
+  return (
+    <span className="badge" data-state={state} data-kind={stateKind(schema.data, state)}>
+      {state}
+    </span>
+  )
+}
 
 export function ClaimIndicator({ node }: { node: Node }) {
   if (!node.claimed_by) return null

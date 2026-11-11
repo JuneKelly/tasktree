@@ -105,3 +105,25 @@ function until<T>(fn: () => T | undefined): Promise<T> {
     return v
   })
 }
+
+test('badge colour kind comes from the schema, not the state name', async () => {
+  mockApi({
+    ...base,
+    'GET /api/tree': {
+      body: {
+        data: [
+          treeNode({ id: 'a', title: 'A', state: 'TODO' }),
+          treeNode({ id: 'b', title: 'B', state: 'DOING' }),
+          treeNode({ id: 'c', title: 'C', state: 'DONE' }),
+          treeNode({ id: 'd', title: 'D', state: 'MYSTERY' }),
+        ],
+      },
+    },
+  })
+  renderApp('/')
+  await screen.findByText('A')
+  const kinds = Object.fromEntries(
+    ['TODO', 'DOING', 'DONE', 'MYSTERY'].map((s) => [s, screen.getByText(s, { selector: '.badge' }).dataset.kind]),
+  )
+  expect(kinds).toEqual({ TODO: 'actionable', DOING: 'active', DONE: 'terminal', MYSTERY: 'unknown' })
+})

@@ -73,11 +73,15 @@ function ClaimControls({ node }: { node: NodeDetail }) {
   const isHuman = actor.data?.actor.startsWith('human:') ?? false
 
   return (
-    <p>
-      <ClaimIndicator node={node} />{' '}
+    <p className="controls">
+      {node.claimed_by ? <ClaimIndicator node={node} /> : <span className="muted">Unclaimed</span>}{' '}
       {!node.claimed_by || mine ? <button onClick={() => claim.mutate()}>{mine ? 'Renew claim' : 'Claim'}</button> : null}
       {mine && <button onClick={() => release.mutate(false)}>Release</button>}
-      {node.claimed_by && !mine && isHuman && <button onClick={() => release.mutate(true)}>Steal claim</button>}
+      {node.claimed_by && !mine && isHuman && (
+        <button className="danger" onClick={() => release.mutate(true)}>
+          Steal claim
+        </button>
+      )}
     </p>
   )
 }
@@ -86,7 +90,7 @@ function MoveControl({ node, flat }: { node: NodeDetail; flat: FlatNode[] }) {
   const [parent, setParent] = useState(node.parent_id ?? '')
   const m = useApiMutation(() => api.move(node.id, node.version, parent || null))
   return (
-    <p>
+    <p className="controls">
       <NodePicker label="Move under" options={flat.filter((o) => o.id !== node.id)} value={parent} onChange={setParent} allowRoot />{' '}
       <button onClick={() => m.mutate()}>Move</button>
     </p>
@@ -189,20 +193,36 @@ function NodeView({ id }: { id: string }) {
   const n = node.data
 
   return (
-    <>
-      <h2>
-        <StateBadge state={n.state} /> {n.title} <StateMenu node={n} />
-        {n.blocked && <span> (blocked)</span>}
-      </h2>
-      <p>
-        {n.parent_id && <NodeLink node={{ id: n.parent_id, title: flat.find((f) => f.id === n.parent_id)?.title ?? 'parent' }} />}
-      </p>
-      <ClaimControls node={n} />
-      {/* Remounting on version resets the form to server state after a save or a conflict refetch. */}
-      <Editor key={n.version} node={n} schema={schema.data} />
-      <MoveControl key={`move-${n.version}`} node={n} flat={flat} />
-      <EdgesPanel node={n} flat={flat} />
-      <Timeline id={n.id} />
-    </>
+    <div className="node-page">
+      <header className="node-head">
+        {n.parent_id && (
+          <p className="crumb">
+            ↑ <NodeLink node={{ id: n.parent_id, title: flat.find((f) => f.id === n.parent_id)?.title ?? 'parent' }} />
+          </p>
+        )}
+        <h2>
+          <StateBadge state={n.state} /> {n.title} <StateMenu node={n} />
+          {n.blocked && <span className="pill blocked">blocked</span>}
+        </h2>
+      </header>
+      <div className="node-main">
+        {/* Remounting on version resets the form to server state after a save or a conflict refetch. */}
+        <Editor key={n.version} node={n} schema={schema.data} />
+      </div>
+      <aside className="node-side">
+        <section aria-label="Claim">
+          <h2>Claim</h2>
+          <ClaimControls node={n} />
+        </section>
+        <section aria-label="Move">
+          <h2>Move</h2>
+          <MoveControl key={`move-${n.version}`} node={n} flat={flat} />
+        </section>
+        <EdgesPanel node={n} flat={flat} />
+      </aside>
+      <div className="node-history">
+        <Timeline id={n.id} />
+      </div>
+    </div>
   )
 }

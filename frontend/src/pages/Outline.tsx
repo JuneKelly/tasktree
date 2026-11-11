@@ -26,9 +26,12 @@ function Row({ node }: { node: TreeNode }) {
             #{t}
           </span>
         ))}
-        <ClaimIndicator node={node} /> <BlockedIcon node={node} /> <StateMenu node={node} />
-        <button onClick={() => setAdding('child')}>+ child</button>
-        <button onClick={() => setAdding('sibling')}>+ sibling</button>
+        <ClaimIndicator node={node} /> <BlockedIcon node={node} />
+        <span className="row-actions">
+          <StateMenu node={node} />
+          <button onClick={() => setAdding('child')}>+ child</button>
+          <button onClick={() => setAdding('sibling')}>+ sibling</button>
+        </span>
       </div>
       {adding === 'child' && (
         <AddForm parentId={node.id} label={`New child of ${node.title}`} onDone={() => setAdding(null)} />

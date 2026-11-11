@@ -27,7 +27,7 @@ export default function Login() {
   }
 
   return (
-    <main>
+    <main className="login">
       <h1>Tasktree</h1>
       <form onSubmit={submit} aria-label="Log in">
         <label htmlFor="token">API token</label> <input id="token" type="password" value={token} onChange={(e) => setTok(e.target.value)} />
