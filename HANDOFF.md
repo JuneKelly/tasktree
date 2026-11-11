@@ -12,33 +12,34 @@ Last updated: 2026-11-11
 
 | Build step (DESIGN.md §8) | State |
 |---|---|
-| 1. Scaffold Phoenix + Vite, Postgres via compose | **Done** (commit `be5d216`) |
-| 2. Migrations + Ecto schemas | **Next** |
-| 3–9 | Not started |
+| 1–7 (scaffold, schema, Workflow/Position, Nodes/Events/Edges, Queries, HTTP API) | **Done** |
+| 8. Frontend (client, Login, Outline, Node page, Agenda) | **Done** |
+| 9. `docs/AGENTS.md` curl examples | **Done** (flow verified against a live backend) |
 
-Verified at the end of step 1: `mix test` (2 tests) and `npm test` (1 test) pass, plus `npm run typecheck` and `npm run lint`, all in containers. `docker compose up` serves Vite on :5173, and its `/api` requests reach Phoenix on :4000 (404, since no routes exist yet).
+Verified: `mix test` (129+ tests) in Docker; `npm test` (26), `npm run typecheck`, `npm run lint`, `npm run build` in Docker. Backend and UI were exercised over HTTP, but the UI was never driven in a real browser (only jsdom tests with a mocked fetch).
 
 ## Environment facts
 
-- Images: `elixir:1.19` (Phoenix 1.8, `phx_new` baked in), `node:24-alpine`, `postgres:17`. Dockerfiles are in `docker/`.
-- `_build`, `deps`, and `node_modules` are named volumes. Host checkouts have none of them, so run `mix deps.get` / `npm install` in the container after dependency changes.
-- Required env vars (config fails without them, by design): `DATABASE_HOST` (backend dev/test config), `BACKEND_URL` (Vite dev-server proxy only; not needed under Vitest).
-- Don't set `MIX_ENV` in compose, or `mix test` runs against the dev env and crashes.
-- Dev tokens: `TASKTREE_TOKENS` defaults to `dev-human=human:dev,dev-agent=agent:dev` (not yet consumed; the auth plug is step 7).
-- Frontend: React 19, Vite 8, TypeScript 7, Vitest 5, oxlint. Deps already installed but unused: `@tanstack/react-query`, `react-router`.
+- Images: `elixir:1.19`, `node:24-alpine`, `postgres:17`. `_build`, `deps`, `node_modules` are named volumes.
+- Required env: `DATABASE_HOST`, `BACKEND_URL` (Vite proxy), `TASKTREE_TOKENS` (outside test; compose defaults `dev-human=human:dev,dev-agent=agent:dev`).
+- Don't set `MIX_ENV` in compose.
+- `nodes_concurrency_test.exs` commits real data (separate connections), so it leaves a few `events` rows in the test DB; the append-only trigger prevents deleting them. Harmless; keyed by unique node ids.
 
-## Step 2 checklist (next)
+## Decisions made along the way (all flagged to the user at the time)
 
-- Migrations: `nodes`, `edges`, `events` per DESIGN.md §3.1–3.3.
-  - ULID string PKs. Pick a ULID library (e.g. `ecto_ulid` or similar) and verify it's maintained before adding it.
-  - `nodes`: check constraint making `claimed_by`/`claim_expires_at` both null or both set. Indexes: `(parent_id, position)`, `state`, GIN on `tags`, GIN on `fields`.
-  - `edges`: unique `(from_id, to_id, kind)`, check `from_id <> to_id`, `kind` limited to `blocks`/`relates`.
-  - `events`: `seq` bigserial PK, no FK on `node_id`, plus a trigger that raises on UPDATE/DELETE.
-- Ecto schemas for all three.
-- Tests: constraint violations surface as errors, and UPDATE/DELETE on `events` fails at the DB level (acceptance criterion in §10).
+- ULID generator is in-repo (`Tasktree.ULID`), no dependency.
+- `nodes.position` has `COLLATE "C"` so keys sort bytewise.
+- Edge add/remove writes one event per endpoint node. Edge changes don't bump node versions.
+- `claim`/`release` bump `version`. A no-op update writes nothing.
+- `version_conflict` puts the current node at `details.current`.
+- Tree `depth` counts levels including the top. The UI requests `depth=50`.
+- Added `GET /api/me` (DESIGN.md §7 updated) for login validation and the human-only "steal claim" button.
+- Expired claims render as `claimed_by: null` in JSON.
 
 ## Open items / deferred decisions
 
-- Production SPA build: Vite `build.outDir` → `backend/priv/static`, plus Phoenix's `index.html` fallback for non-`/api` routes. Deferred to step 8. The frontend container only mounts `frontend/`, so this needs a mount or a copy step.
-- DESIGN.md §7 adds `GET /api/schema` and `allowed_transitions` on nodes. These aren't yet in the §5 endpoint list but should be implemented with it.
-- Property tests for `Tasktree.Position` (step 3) need `stream_data` added to `mix.exs`.
+- **Production SPA build** (not done, not in the §8 steps or §10 acceptance criteria): Vite `build.outDir` -> `backend/priv/static`, plus a Phoenix `index.html` fallback for non-`/api` routes. The frontend container only mounts `frontend/`, so this needs a mount or a copy step. `npm run build` itself works.
+- UI has never been driven in a real browser; walk the §10 flow by hand (`docker compose up`, open :5173, log in with `dev-human`).
+- Outline can't show an expander for nodes at the tree depth cutoff (no child-count in the API); irrelevant while the UI requests depth 50.
+- States in `/api/schema` are sorted by name (workflow config is a map). Add an explicit order to the config if the UI should show a canonical order.
+- The dev DB contains two nodes created by smoke tests ("smoke", "doc-example").
