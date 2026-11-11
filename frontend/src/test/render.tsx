@@ -7,11 +7,12 @@ import { setToken } from '../auth'
 export function renderApp(path = '/', { token = 'tok' }: { token?: string | null } = {}) {
   if (token) setToken(token)
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  return render(
+  const result = render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={[path]}>
         <App />
       </MemoryRouter>
     </QueryClientProvider>,
   )
+  return { ...result, client }
 }

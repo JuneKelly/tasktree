@@ -6,12 +6,13 @@ import { FieldInput } from './FieldInput'
 
 // State picker limited to the node's allowed transitions (from the API). If the target
 // state requires fields the node lacks, asks for them first; the form comes from the schema.
-export function StateMenu({ node }: { node: Node }) {
+export function StateMenu({ node, onChanged }: { node: Node; onChanged?: (n: Node) => void }) {
   const schema = useSchema()
   const [target, setTarget] = useState<string | null>(null)
   const [values, setValues] = useState<Record<string, FieldValue | undefined>>({})
-  const m = useApiMutation((v: { to: string; fields?: Record<string, FieldValue> }) =>
-    api.transition(node.id, node.version, v.to, v.fields),
+  const m = useApiMutation(
+    (v: { to: string; fields?: Record<string, FieldValue> }) => api.transition(node.id, node.version, v.to, v.fields),
+    onChanged,
   )
 
   if (!schema.data || node.allowed_transitions.length === 0) return null

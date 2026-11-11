@@ -87,8 +87,8 @@ export const api = {
   ) => request<Node>('PATCH', `/nodes/${id}`, { body: patch, version }),
   transition: (id: string, version: number, to: string, fields?: Record<string, FieldValue>) =>
     request<Node>('POST', `/nodes/${id}/transition`, { body: { to, ...(fields ? { fields } : {}) }, version }),
-  move: (id: string, version: number, parentId: string | null) =>
-    request<Node>('POST', `/nodes/${id}/move`, { body: { parent_id: parentId }, version }),
+  move: (id: string, version: number, parentId: string | null, anchor: { after_id?: string; before_id?: string } = {}) =>
+    request<Node>('POST', `/nodes/${id}/move`, { body: { parent_id: parentId, ...anchor }, version }),
   claim: (id: string) => request<Node>('POST', `/nodes/${id}/claim`, { body: {} }),
   release: (id: string, force: boolean) => request<Node>('POST', `/nodes/${id}/release`, { body: { force } }),
   addEdge: (body: { from_id: string; to_id: string; kind: 'blocks' | 'relates' }) =>

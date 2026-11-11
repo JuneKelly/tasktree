@@ -12,13 +12,22 @@ interface Props {
 
 const blurActive = () => (document.activeElement as HTMLElement | null)?.blur()
 
-/** WYSIWYG body editor. Emits markdown only for real user edits (TipTap's onUpdate). */
+/**
+ * WYSIWYG body editor. Loading markdown can itself emit an update with a normalised
+ * serialisation (e.g. `*` bullets become `-`), so any content that serialises the same as
+ * the freshly loaded document is reported as the untouched original. Opening and closing
+ * a note therefore never rewrites it.
+ */
 export function RichBodyEditor({ label, initial, onChange, onFocus, onBlur }: Props) {
   // TipTap captures callbacks at creation; route through refs so they stay current.
   const cb = useRef({ onChange, onFocus, onBlur })
   useEffect(() => {
     cb.current = { onChange, onFocus, onBlur }
   })
+  // Serialisation of the document as loaded. TipTap can emit an update while parsing the
+  // markdown, before onCreate; that update is part of loading, not a user edit.
+  const loaded = useRef<string | null>(null)
+  const created = useRef(false)
 
   const editor = useEditor({
     extensions: bodyExtensions,
@@ -26,7 +35,18 @@ export function RichBodyEditor({ label, initial, onChange, onFocus, onBlur }: Pr
     contentType: 'markdown',
     autofocus: 'end',
     editorProps: { attributes: { 'aria-label': label, class: 'body-rich' } },
-    onUpdate: ({ editor }) => cb.current.onChange(editor.getMarkdown()),
+    onCreate: ({ editor }) => {
+      created.current = true
+      loaded.current ??= editor.getMarkdown()
+    },
+    onUpdate: ({ editor }) => {
+      const md = editor.getMarkdown()
+      if (!created.current) {
+        loaded.current = md
+        return
+      }
+      cb.current.onChange(md === loaded.current ? initial : md)
+    },
     onFocus: () => cb.current.onFocus(),
     onBlur: () => cb.current.onBlur(),
   })
