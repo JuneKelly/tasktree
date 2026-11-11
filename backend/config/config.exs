@@ -9,7 +9,8 @@ import Config
 
 config :tasktree,
   ecto_repos: [Tasktree.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime],
+  workflow_path: Path.expand("../priv/workflow.exs", __DIR__)
 
 # Configure the endpoint
 config :tasktree, TasktreeWeb.Endpoint,
