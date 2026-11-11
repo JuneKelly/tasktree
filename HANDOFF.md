@@ -41,4 +41,4 @@ Verified at the end of step 1: `mix test` (2 tests) and `npm test` (1 test) pass
 
 - Production SPA build: Vite `build.outDir` → `backend/priv/static`, plus Phoenix's `index.html` fallback for non-`/api` routes. Deferred to step 8. The frontend container only mounts `frontend/`, so this needs a mount or a copy step.
 - DESIGN.md §7 adds `GET /api/schema` and `allowed_transitions` on nodes. These aren't yet in the §5 endpoint list but should be implemented with it.
-- `property tests` for `Tasktree.Position` (step 3) need `stream_data` added to `mix.exs`.
+- Property tests for `Tasktree.Position` (step 3) need `stream_data` added to `mix.exs`.
