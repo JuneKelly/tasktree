@@ -19,19 +19,23 @@ Don't run `mix`, `npm`, `node`, or `psql` on the host. Use compose:
 ```sh
 docker compose up -d db                       # Postgres only
 docker compose up                             # db + backend (:4000) + frontend (:5173)
-docker compose run --rm backend mix test      # backend tests (MIX_ENV is overridden to test by mix)
+docker compose run --rm backend mix test      # backend tests (don't set MIX_ENV in compose; mix picks test)
 docker compose run --rm backend mix <task>    # any mix task (deps.get, ecto.migrate, format, ...)
 docker compose run --rm frontend npm test     # frontend tests (Vitest)
+docker compose run --rm frontend npm run typecheck
+docker compose run --rm frontend npm run lint # oxlint
 docker compose run --rm frontend npm <cmd>    # any npm command
 ```
 
 Notes:
 - `_build`, `deps`, and `node_modules` live in named volumes, not on the host. After changing `mix.exs` or `package.json`, run `mix deps.get` / `npm install` in the container.
-- Backend talks to Postgres at host `db` (`DATABASE_HOST`). The Vite dev server proxies `/api` to `BACKEND_URL` (`http://backend:4000`).
+- Backend talks to Postgres at host `db` (`DATABASE_HOST` is required; config fails without it). The Vite dev server proxies `/api` to `BACKEND_URL` (`http://backend:4000`, also required).
 - Dev auth tokens come from `TASKTREE_TOKENS` in `compose.yaml` (`dev-human` → `human:dev`, `dev-agent` → `agent:dev`).
 - If a fresh DB is needed: `docker compose down -v` wipes **all** volumes, including the DB. Ask before doing this if the DB holds anything you didn't create.
 
 ## Working rules
+
+- `backend/AGENTS.md` holds Phoenix 1.8's generated Elixir/Phoenix/Ecto rules. Follow it for backend code, but skip its HTML/LiveView/asset sections (this app is a JSON API only).
 
 - Follow the build order in DESIGN.md §8. Each step leaves `mix test` and `npm test` green.
 - Run the smallest relevant test set after a change (`mix test test/path_test.exs`), then broaden as needed.

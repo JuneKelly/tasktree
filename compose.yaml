@@ -24,7 +24,6 @@ services:
     command: sh -c "mix deps.get && mix ecto.create && mix ecto.migrate && mix phx.server"
     environment:
       DATABASE_HOST: db
-      MIX_ENV: dev
       TASKTREE_TOKENS: ${TASKTREE_TOKENS:-dev-human=human:dev,dev-agent=agent:dev}
     ports:
       - "4000:4000"
