@@ -1,6 +1,6 @@
 # Tasktree: Design Doc (MVP)
 
-Status: design approved in discussion, no code written yet. This doc is meant to be sufficient for an implementing agent to start work.
+Status: MVP implemented (build steps 1–9, plus inline outline editing, which is post-MVP). This doc remains the source of truth for behavior; see `HANDOFF.md` for decisions made during implementation and `TODO.md` for what's next.
 
 ## 1. Concept
 

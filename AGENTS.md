@@ -59,3 +59,23 @@ Notes:
 - Concurrency tests (claim race, optimistic version) use real concurrent processes against the sandbox in shared mode or with explicit allowances.
 - `Tasktree.Position` has property tests (StreamData).
 - Controller tests assert the error contract (status and `error.code`).
+
+## Conventions learned the hard way
+
+Backend:
+- `nodes.position` is `COLLATE "C"`: keys sort bytewise, so never `ORDER BY position` on a column with the default collation, and never compare keys with a locale-aware function.
+- Ecto: `select_merge` needs a map of dynamics (`select_merge(^%{blocked: dyn})`), not dynamics inside a literal map. `tags` is `text[]`: use `fragment("? @> ?::text[]", ...)`.
+- Tests that need real concurrency (separate connections) set the sandbox to `:auto`, commit data and delete nodes afterwards. They can't delete events (append-only trigger), so a few event rows stay in the test DB; keep assertions keyed by unique node ids.
+- Don't name a test helper `path/2` in a ConnCase module (clashes with verified routes `path`).
+
+Frontend:
+- Autosave rules (`src/outline/useAutosave.ts`): chain `If-Match` from the previous response's version; never replace a focused, dirty or in-flight field with polled data; on `version_conflict` keep the draft and let the user choose Keep mine / Take theirs. Tests for each exist; keep them passing.
+- The rich editor (TipTap) is used only when a body round-trips to identical HTML (`src/editor/markdown.ts`). Opening and closing a note must save nothing. TipTap emits an update *during load*, before `onCreate`; treat that as loading, not an edit.
+- jsdom can't type into ProseMirror: tests drive it through `element.editor` commands. `src/test/setup.ts` stubs layout APIs; `vite.config.ts` loads `index.css` for style tests (check which rules match with `element.matches`; jsdom's computed-style cascade is unreliable).
+- CSS: scope outline rules to `.outline ul.children`, `.row`, etc. Notes render inside the outline, so broad selectors (`.outline ul`, `main h2`) leak into markdown. Markdown styling lives under `.md`.
+- Colour state badges by kind (terminal / actionable / active, derived from `/api/schema`), never by state name.
+
+Tooling:
+- The host is macOS: BSD `sed` has no `\b` and needs `sed -i ''`. For multi-line or regex edits, use `perl -pi -e` or a small Python script.
+- Verify a test can fail: break the behavior it guards and confirm it goes red, then restore.
+
